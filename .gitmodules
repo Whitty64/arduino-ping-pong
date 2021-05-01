@@ -1,0 +1,3 @@
+[submodule "arduino-knock-detector"]
+	path = arduino-knock-detector
+	url = https://github.com/funkyfisch/arduino-knock-detector.git
