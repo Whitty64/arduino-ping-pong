@@ -59,15 +59,14 @@ void callback(float knockIntensity, long pulseLength) {
       Serial.println(firstEventAt);
     }
     else {
-      weAreTiming = false;
-      //      Serial.print(" end   ");
+ 
       secondEventAt = millis();
       //      Serial.println(secondEventAt);
       timeBetweenEvents = secondEventAt - firstEventAt;
       Serial.print("  Time between events ");
       Serial.println(timeBetweenEvents);
 
-      if (timeBetweenEvents >= timeThreshold) {
+      if (weAreTiming && (timeBetweenEvents >= timeThreshold)) {
         if (lkp == 0) {
           p1 = p1 + rallyPoints;
           Serial.print("Player 1: ");
@@ -83,6 +82,8 @@ void callback(float knockIntensity, long pulseLength) {
 
         Serial.print(" ");
       }
+           weAreTiming = false;
+      //      Serial.print(" end   ");
     }
 
 
