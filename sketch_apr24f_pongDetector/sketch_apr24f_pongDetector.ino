@@ -19,8 +19,12 @@ int piezoInputSignal = 0;
 const int intensityThreshold = 2;
 
 
-const int timeThreshold = 5000; // maximum amount of time allowed between knocks
-int previousRunTime = 0;  // tracks time between knocks
+static const unsigned long timeThreshold = 5000; // maximum amount of time allowed between knocks
+unsigned long firstEventAt;
+unsigned long secondEventAt;
+unsigned long timeBetweenEvents;
+bool weAreTiming;
+
 
 
 int rallyPoints = 0 * 2;
@@ -41,33 +45,46 @@ void callback(float knockIntensity, long pulseLength) {
 
   if (knockIntensity >= intensityThreshold) {
     rallyPoints = rallyPoints + 1;
-    
-    int currentRunTime = millis();
-    Serial.print("Timer Started ");
-    Serial.println(runTime);
-  }
+    //  Serial.println("Knock detected!");
+    //  Serial.print("Intensity: ");
+    //  Serial.println(knockIntensity);
+    //  Serial.print("Pulse length: ");
+    //  Serial.println(pulseLength);
 
-  //  Serial.println("Knock detected!");
-  //  Serial.print("Intensity: ");
-  //  Serial.println(knockIntensity);
-  //  Serial.print("Pulse length: ");
-  //  Serial.println(pulseLength);
-  Serial.print("Rally Points: ");
-  Serial.println(rallyPoints);
 
-  if (runTime > timeThreshold ) {
-    Serial.println("Exceeded Threshold");
-    runTime = 0;
-    if (lkp == 0) {
-      p1 = p1 + rallyPoints;
-      Serial.print("Player 1: ");
-      Serial.println(p1);
-    } else if (lkp == 1) {
-      p2 = p2 + rallyPoints;
-      Serial.print("Player 2: ");
-      Serial.println(p2);
+    if (!weAreTiming) {
+      weAreTiming = true;
+      Serial.print(" start ");
+      firstEventAt = millis();
+      Serial.println(firstEventAt);
     }
-    //    rallyPoints = 0;
+    else {
+      weAreTiming = false;
+      //      Serial.print(" end   ");
+      secondEventAt = millis();
+      //      Serial.println(secondEventAt);
+      timeBetweenEvents = secondEventAt - firstEventAt;
+      Serial.print("  Time between events ");
+      Serial.println(timeBetweenEvents);
+
+      if (timeBetweenEvents >= timeThreshold) {
+        if (lkp == 0) {
+          p1 = p1 + rallyPoints;
+          Serial.print("Player 1: ");
+          Serial.println(p1);
+        } else if (lkp == 1) {
+          p2 = p2 + rallyPoints;
+          Serial.print("Player 2: ");
+          Serial.println(p2);
+        }
+        Serial.print("Rally over, Rally Points: ");
+        Serial.println(rallyPoints);
+        rallyPoints = 0;
+
+        Serial.print(" ");
+      }
+    }
+
 
   }
 }
@@ -76,7 +93,7 @@ KnockDetector knockDetector(20, 5, callback);
 
 void setup() {
   Serial.begin(115200);
-  pinMode(buttonPin, INPUT);
+  //  pinMode(buttonPin, INPUT);
 }
 
 void loop() {
