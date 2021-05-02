@@ -11,8 +11,10 @@
 //int buttonState = 0;         // variable for reading the pushbutton status
 
 
-const int piezoInputPin = A0;
-int piezoInputSignal = 0;
+const int piezoInputPinOne = A0;
+const int piezoInputPinTwo = A7;
+
+//int piezoInputSignalOne = 0;
 
 //Need to play a round and gather data to see what the threshold should actually be.
 //const int pulseLength = 12345;
@@ -46,8 +48,8 @@ void callback(float knockIntensity, long pulseLength) {
   if (knockIntensity >= intensityThreshold) {
     rallyPoints = rallyPoints + 1;
     //  Serial.println("Knock detected!");
-    //  Serial.print("Intensity: ");
-    //  Serial.println(knockIntensity);
+      Serial.print("Intensity: ");
+      Serial.println(knockIntensity);
     //  Serial.print("Pulse length: ");
     //  Serial.println(pulseLength);
 
@@ -98,7 +100,8 @@ void setup() {
 }
 
 void loop() {
-  knockDetector.loop(analogRead(piezoInputPin));
+  knockDetector.loop(analogRead(piezoInputPinOne));
+  knockDetector.loop(analogRead(piezoInputPinTwo));
 
   //  Start a timer once a ralley has started.
   //  if (rallyPoints > 0) {
