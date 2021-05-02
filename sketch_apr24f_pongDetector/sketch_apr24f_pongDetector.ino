@@ -7,66 +7,51 @@
 //- Or just make two buttons under the table
 
 
-//const int buttonPin = A8;     // the number of the pushbutton pin
-//int buttonState = 0;         // variable for reading the pushbutton status
-
-
 const int piezoInputPinOne = A0;
 const int piezoInputPinTwo = A7;
-const int piezoInputPins[2] = {A0, A7}; //using a constant would keep you from making your error
-//int result[2];
+//const int piezoInputPins[2] = {A0, A7}; //using a constant would keep you from making your error
 
-//Need to play a round and gather data to see what the threshold should actually be.
-//const int pulseLength = 12345;
-const int intensityThreshold = 2;
-
-
-static const unsigned long timeThreshold = 5000; // maximum amount of time allowed between knocks
+//TIMING
+int timeThreshold = 5000; // maximum amount of time allowed between knocks
 unsigned long firstEventAt;
 unsigned long secondEventAt;
 unsigned long timeBetweenEvents;
 bool weAreTiming;
 
 
+//Need to play a round and gather data to see what the threshold should actually be.
+//const int pulseLength = 12345;
+const int intensityThreshold = 2;
 
-int rallyPoints = 0 * 2;
+int rallyPoints = 0;
 int p1 = 0;
 int p2 = 0;
 
-
 //Last known postion 0->p1 1->p2
-int lkp = 0;
+int lkp = 10;
 
-//void onKnockReceived(float knockIntensity, long pulseLength) {
-//  runTime = millis();
-//  Serial.print("Timer Started ");
-//  Serial.println(runTime);
-//}
 
 void callback(float knockIntensity, long pulseLength) {
 
   if (knockIntensity >= intensityThreshold) {
-    //    (lastPin == 0) ? expression1 : expression2;
-
-
     rallyPoints = rallyPoints + 1;
     //  Serial.println("Knock detected!");
     //  Serial.print("Pulse length: ");
     //  Serial.println(pulseLength);
     Serial.print("Intensity: ");
     Serial.println(knockIntensity);
-
+    (lkp == 0) ? Serial.print("Left ") : Serial.print("Right ");
+    Serial.println(lkp);
 
     if (!weAreTiming) {
       weAreTiming = true;
-      Serial.print(" start ");
       firstEventAt = millis();
-      Serial.println(firstEventAt);
+//      Serial.print(" start ");
+//      Serial.println(firstEventAt);
     }
     else {
-
       secondEventAt = millis();
-      //      Serial.println(secondEventAt);
+      // Serial.println(secondEventAt);
       timeBetweenEvents = secondEventAt - firstEventAt;
       Serial.print("  Time between events ");
       Serial.println(timeBetweenEvents);
@@ -74,29 +59,32 @@ void callback(float knockIntensity, long pulseLength) {
       if (weAreTiming && (timeBetweenEvents >= timeThreshold)) {
         if (lkp == 0) {
           p1 = p1 + rallyPoints;
-          Serial.print("Player 1: ");
+          Serial.print("**RALLY OVER** Added Points: ");
+          Serial.println(rallyPoints);
+          Serial.print("**RALLY OVER** (Left)Player 1 Total Points: ");
           Serial.println(p1);
+          Serial.print("**RALLY OVER** (Right)Player 2 Total Points: ");
+          Serial.println(p2);
         } else if (lkp == 1) {
           p2 = p2 + rallyPoints;
-          Serial.print("Player 2: ");
+          Serial.print("**RALLY OVER** (Right)Player 2 Total Points: ");
           Serial.println(p2);
         }
-        Serial.print("Rally over, Rally Points: ");
+        Serial.print("Current Rally Points: ");
         Serial.println(rallyPoints);
         rallyPoints = 0;
 
-        Serial.print(" ");
+        Serial.println();
       }
+
       weAreTiming = false;
-      //      Serial.print(" end   ");
     }
 
 
   }
 }
 //These numbers are -> (int lowThreshold, int noiseThreshold, int pin, CALLBACK)
-KnockDetector knockDetectorOne(20, 5, callback);
-KnockDetector knockDetectorTwo(20, 5, callback);
+KnockDetector knockDetector(20, 5, callback);
 
 
 void setup() {
@@ -107,15 +95,11 @@ void setup() {
 void loop() {
   if (analogRead(piezoInputPinOne) > 1) {
     lkp = 0;
-    Serial.print("Last Pin: LEFT  ");
-    Serial.println(lkp);
-    Serial.println(analogRead(piezoInputPinOne));
+    knockDetector.loop(analogRead(piezoInputPinOne));
   }
   else if (analogRead(piezoInputPinTwo) > 1 ) {
     lkp = 1;
-    Serial.print("Last Pin: RIGHT ");
-    Serial.println(lkp);
-    Serial.println(analogRead(piezoInputPinTwo));
+    knockDetector.loop(analogRead(piezoInputPinTwo));
   }
 
 
